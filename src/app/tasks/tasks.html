@@ -1,105 +1,148 @@
 <!-- // task creation and updation -->
-<form
-    class="form"
-    [formRoot]="form"
-    (submit)="submit()"
->
-    <input
-        type="text"
-        id="title"
-        placeholder="Title"
-        [formField]="form.title"
-    />
-
-    <input
-        type="text"
-        id="description"
-        placeholder="Description"
-        [formField]="form.description"
-    />
-
-    <select
-        id="priority"
-        [formField]="form.priority"
+<div class="task">
+    <form
+        class="form"
+        [formRoot]="form"
+        (submit)="submit()"
     >
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-    </select>
+        <input
+            type="text"
+            id="title"
+            placeholder="Title"
+            [formField]="form.title"
+        />
 
-    <select
-        id="status"
-        [formField]="form.status"
-    >
-        <option value="todo">Todo</option>
-        <option value="in_progress">In Progress</option>
-        <option value="done">Done</option>
-    </select>
+        <input
+            type="text"
+            id="description"
+            placeholder="Description"
+            [formField]="form.description"
+        />
 
-    <input
-        type="date"
-        id="dueDate"
-        [formField]="form.dueDate"
-    />
+        <select
+            id="priority"
+            [formField]="form.priority"
+        >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+        </select>
 
-    <div class="form__actions">
-        @if (formState() === 'create') {
+        <select
+            id="status"
+            [formField]="form.status"
+        >
+            <option value="todo">Todo</option>
+            <option value="in_progress">In Progress</option>
+            <option value="done">Done</option>
+        </select>
+
+        <input
+            type="date"
+            id="dueDate"
+            [formField]="form.dueDate"
+        />
+
+        <div class="form__actions">
+            @if (formState() === 'create') {
+                <button
+                    type="submit"
+                    [disabled]="form().invalid()"
+                >
+                    Submit
+                </button>
+            } @else {
+                <button
+                    type="submit"
+                    [disabled]="form().invalid()"
+                >
+                    Update
+                </button>
+            }
             <button
-                type="submit"
-                [disabled]="form().invalid()"
+                type="button"
+                (click)="clear()"
             >
-                Submit
+                Clear
             </button>
-        } @else {
-            <button
-                type="submit"
-                [disabled]="form().invalid()"
-            >
-                Update
-            </button>
-        }
-        <button type="button" (click)="clear()">Clear</button>
-    </div>
-</form>
+        </div>
+    </form>
 
-<!-- // Task List -->
-<div class="list">
-    <table class="list__table">
-        <tr class="list__row">
-            <td class="list__cell _title">Title</td>
-            <td class="list__cell _description">Description</td>
-            <td class="list__cell _status">Status</td>
-            <td class="list__cell _priority">Priority</td>
-            <td class="list__cell _due-date">Due Date</td>
-            <td class="list__cell _action">action</td>
-        </tr>
-        <!-- <tbody> -->
-        @for (task of tasks(); track task.id) {
+    <!-- Search  -->
+    <fieldset class="filter">
+        <legend>Filter</legend>
+        <div class="filter__form">
+            <input
+                type="text"
+                placeholder="Search"
+                name="search"
+                id="search"
+                [value]="search()"
+                (input)="handleSearch($event)"
+            />
+            <select
+                id="status"
+                [value]="status()"
+                (change)="handleStatus($event)"
+            >
+                <option value="">All Statuses</option>
+                <option value="todo">Todo</option>
+                <option value="in_progress">In Progress</option>
+                <option value="done">Done</option>
+            </select>
+            <select
+                id="priority"
+                [value]="priority()"
+                (change)="handlePriority($event)"
+            >
+                <option value="">All priorities</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+            <button type="button" (click)="clearFilter()">Clear</button>
+        </div>
+    </fieldset>
+
+    <!-- // Task List -->
+    <div class="list">
+        <table class="list__table">
             <tr class="list__row">
-                <td class="list__cell _title">{{ task.title }}</td>
-                <td class="list__cell _description">{{ task.description || '-' }}</td>
-                <td class="list__cell _status">{{ task.status }}</td>
-                <td class="list__cell _priority">{{ task.priority }}</td>
-                <td class="list__cell _due-date">{{ task.dueDate | date: 'MMM d, y' }}</td>
-                <td class="list__cell _action">
-                    <button
-                        class="button _delete"
-                        type="button"
-                        (click)="delete(task.id)"
-                    >
-                        Del
-                    </button>
-
-                    <button
-                        class="button _primary"
-                        type="button"
-                        (click)="update(task)"
-                    >
-                        Update
-                    </button>
-                </td>
+                <th class="list__cell _title">Title</th>
+                <th class="list__cell _description">Description</th>
+                <th class="list__cell _status">Status</th>
+                <th class="list__cell _priority">Priority</th>
+                <th class="list__cell _due-date">Due Date</th>
+                <th class="list__cell _action">action</th>
             </tr>
-        }
-        <!-- </tbody> -->
-    </table>
+            <!-- <tbody> -->
+            @for (task of tasks(); track task.id) {
+                <tr class="list__row">
+                    <td class="list__cell _title">{{ task.title }}</td>
+                    <td class="list__cell _description">{{ task.description || '-' }}</td>
+                    <td class="list__cell _status">{{ task.status }}</td>
+                    <td class="list__cell _priority">{{ task.priority }}</td>
+                    <td class="list__cell _due-date">{{ task.dueDate | date: 'MMM d, y' }}</td>
+                    <td class="list__cell _action">
+                        <button
+                            class="button _delete"
+                            type="button"
+                            (click)="delete(task.id)"
+                        >
+                            Del
+                        </button>
+
+                        <button
+                            class="button _primary"
+                            type="button"
+                            (click)="update(task)"
+                        >
+                            Update
+                        </button>
+                    </td>
+                </tr>
+            }
+            <!-- </tbody> -->
+        </table>
+    </div>
 </div>

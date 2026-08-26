@@ -1,6 +1,6 @@
-import { DatePipe, JsonPipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Component, inject, linkedSignal, signal, Signal } from '@angular/core';
+import { Component, inject, linkedSignal, signal, debounced } from '@angular/core';
 import { form, FormField, FormRoot, minLength, required } from '@angular/forms/signals';
 
 export enum TaskStatus {
@@ -18,7 +18,7 @@ export enum TaskPriority {
 export interface Task {
     title: string;
     description: string;
-    status: 'todo' | 'in_progress' | 'done';
+    status: 'todo' | 'in_progress' | 'done' | '';
     dueDate: string;
     createdAt: Date;
     updatedAt: Date;
@@ -30,7 +30,7 @@ export type TaskModel = Pick<Task, 'title' | 'description' | 'dueDate' | 'status
 
 @Component({
     selector: 'app-tasks',
-    imports: [FormField, JsonPipe, FormRoot, DatePipe],
+    imports: [FormField, FormRoot, DatePipe],
     templateUrl: './tasks.html',
     styleUrl: './tasks.scss',
 })
@@ -39,9 +39,18 @@ export class Tasks {
     protected readonly http = inject(HttpClient);
     protected formState = signal<'create' | 'update'>('create');
     protected updateId = signal<string>('');
+    protected search = signal('');
+    protected status = signal<'todo' | 'in_progress' | 'done' | ''>('');
+    protected priority = signal<'low' | 'medium' | 'high' | ''>('');
+    protected debouncedSearch = debounced(this.search, 500);
 
     protected tasksResource = httpResource<Task[]>(() => ({
         url: this.url,
+        params: {
+            search: this.debouncedSearch.value(),
+            status: this.status(),
+            priority: this.priority(),
+        },
     }));
 
     protected tasks = linkedSignal<Task[]>(() => {
@@ -104,6 +113,27 @@ export class Tasks {
         }
     }
 
+    public handleSearch(event: Event): void {
+        if (event.target) {
+            const target = event.target as HTMLInputElement;
+            this.search.set(target?.value);
+        }
+    }
+
+    public handleStatus(event: Event): void {
+        if (event.target) {
+            const target = event.target as HTMLInputElement;
+            this.status.set(target?.value as 'todo' | 'in_progress' | 'done');
+        }
+    }
+
+    public handlePriority(event: Event): void {
+        if (event.target) {
+            const target = event.target as HTMLInputElement;
+            this.priority.set(target?.value as 'low' | 'medium' | 'high');
+        }
+    }
+
     public update(task: Task): void {
         this.updateId.set(task.id);
         this.formState.set('update');
@@ -125,5 +155,11 @@ export class Tasks {
             priority: 'low',
             status: 'todo',
         });
+    }
+
+    public clearFilter(): void {
+        this.search.set('');
+        this.status.set('');
+        this.priority.set('');
     }
 }
