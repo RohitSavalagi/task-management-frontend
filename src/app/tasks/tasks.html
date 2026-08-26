@@ -12,12 +12,56 @@
             [formField]="form.title"
         />
 
+        @if (form.title().touched() && form.title().invalid()) {
+            <div class="error">
+                @if (
+                    form
+                        .title()
+                        .errors()
+                        .some((error) => error.kind === 'required')
+                ) {
+                    <span>Title is required.</span>
+                }
+
+                @if (
+                    form
+                        .title()
+                        .errors()
+                        .some((error) => error.kind === 'minLength')
+                ) {
+                    <span>Title must be at least 3 characters.</span>
+                }
+
+                @if (
+                    form
+                        .title()
+                        .errors()
+                        .some((error) => error.kind === 'maxLength')
+                ) {
+                    <span>Title cannot exceed 255 characters.</span>
+                }
+            </div>
+        }
+
         <input
             type="text"
             id="description"
             placeholder="Description"
             [formField]="form.description"
         />
+
+        @if (form.description().touched() && form.description().invalid()) {
+            <div class="error">
+                @if (
+                    form
+                        .description()
+                        .errors()
+                        .some((error) => error.kind === 'maxLength')
+                ) {
+                    <span>Description cannot exceed 2000 characters.</span>
+                }
+            </div>
+        }
 
         <select
             id="priority"
@@ -100,7 +144,12 @@
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
             </select>
-            <button type="button" (click)="clearFilter()">Clear</button>
+            <button
+                type="button"
+                (click)="clearFilter()"
+            >
+                Clear
+            </button>
         </div>
     </fieldset>
 

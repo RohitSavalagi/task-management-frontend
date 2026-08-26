@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Component, inject, linkedSignal, signal, debounced } from '@angular/core';
-import { form, FormField, FormRoot, minLength, required } from '@angular/forms/signals';
+import { form, FormField, FormRoot, maxLength, minLength, required } from '@angular/forms/signals';
 
 export enum TaskStatus {
     TODO = 'todo',
@@ -66,7 +66,13 @@ export class Tasks {
     });
 
     protected form = form(this.taskForm, (path) => {
-        (required(path.title), minLength(path.title, 3), minLength(path.description, 3));
+        (
+            required(path.title),
+            minLength(path.title, 3),
+            maxLength(path.title, 255),
+
+            maxLength(path.description, 2000)
+        );
     });
 
     public delete(id: string): void {
