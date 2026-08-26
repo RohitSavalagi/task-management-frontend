@@ -1,34 +1,11 @@
+.task {
+    padding: 0 20px;
+}
+
 .form {
     display: flex;
     flex-direction: column;
-    padding: 0 20px;
     gap: 8px;
-
-    & > * {
-        display: block;
-        padding: 8px;
-        outline: none;
-        border: none;
-        border-bottom: 1px solid #aaa;
-        font-family: inherit;
-
-        &:disabled {
-            cursor: no-drop;
-        }
-
-        &:focus {
-            border-bottom: 1px solid #888;
-        }
-
-        &:required {
-            position: relative;
-
-            ::after {
-                content: 'U+002A';
-                position: absolute;
-            }
-        }
-    }
 
     &__actions {
         display: flex !important;
@@ -58,8 +35,35 @@
     }
 }
 
+input,
+select,
+button {
+    display: block;
+    padding: 8px;
+    outline: none;
+    border: none;
+    border-bottom: 1px solid #aaa;
+    font-family: inherit;
+
+    &:disabled {
+        cursor: no-drop;
+    }
+
+    &:focus {
+        border-bottom: 1px solid #888;
+    }
+
+    &:required {
+        position: relative;
+
+        ::after {
+            content: 'U+002A';
+            position: absolute;
+        }
+    }
+}
+
 .list {
-    padding: 0 20px;
     margin-top: 20px;
 
     &__table {
@@ -73,6 +77,8 @@
 
     &__cell {
         flex: 1;
+        display: flex;
+        align-items: center;
 
         &._title {
             flex: 0 0 20%;
@@ -128,5 +134,15 @@
         border: 1px solid #dddddd;
         text-align: left;
         padding: 8px;
+    }
+}
+
+.filter {
+
+    &__form {
+        display: flex;
+        flex-direction: column;
+        margin: 8px;
+        gap: 10px;
     }
 }
