@@ -1,2 +1,105 @@
-{{ tasks() | json }}
+<!-- // task creation and updation -->
+<form
+    class="form"
+    [formRoot]="form"
+    (submit)="submit()"
+>
+    <input
+        type="text"
+        id="title"
+        placeholder="Title"
+        [formField]="form.title"
+    />
 
+    <input
+        type="text"
+        id="description"
+        placeholder="Description"
+        [formField]="form.description"
+    />
+
+    <select
+        id="priority"
+        [formField]="form.priority"
+    >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+    </select>
+
+    <select
+        id="status"
+        [formField]="form.status"
+    >
+        <option value="todo">Todo</option>
+        <option value="in_progress">In Progress</option>
+        <option value="done">Done</option>
+    </select>
+
+    <input
+        type="date"
+        id="dueDate"
+        [formField]="form.dueDate"
+    />
+
+    <div class="form__actions">
+        @if (formState() === 'create') {
+            <button
+                type="submit"
+                [disabled]="form().invalid()"
+            >
+                Submit
+            </button>
+        } @else {
+            <button
+                type="submit"
+                [disabled]="form().invalid()"
+            >
+                Update
+            </button>
+        }
+        <button type="button" (click)="clear()">Clear</button>
+    </div>
+</form>
+
+<!-- // Task List -->
+<div class="list">
+    <table class="list__table">
+        <tr class="list__row">
+            <td class="list__cell _title">Title</td>
+            <td class="list__cell _description">Description</td>
+            <td class="list__cell _status">Status</td>
+            <td class="list__cell _priority">Priority</td>
+            <td class="list__cell _due-date">Due Date</td>
+            <td class="list__cell _action">action</td>
+        </tr>
+        <!-- <tbody> -->
+        @for (task of tasks(); track task.id) {
+            <tr class="list__row">
+                <td class="list__cell _title">{{ task.title }}</td>
+                <td class="list__cell _description">{{ task.description || '-' }}</td>
+                <td class="list__cell _status">{{ task.status }}</td>
+                <td class="list__cell _priority">{{ task.priority }}</td>
+                <td class="list__cell _due-date">{{ task.dueDate | date: 'MMM d, y' }}</td>
+                <td class="list__cell _action">
+                    <button
+                        class="button _delete"
+                        type="button"
+                        (click)="delete(task.id)"
+                    >
+                        Del
+                    </button>
+
+                    <button
+                        class="button _primary"
+                        type="button"
+                        (click)="update(task)"
+                    >
+                        Update
+                    </button>
+                </td>
+            </tr>
+        }
+        <!-- </tbody> -->
+    </table>
+</div>
