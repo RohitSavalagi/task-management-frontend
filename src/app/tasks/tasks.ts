@@ -2,29 +2,8 @@ import { DatePipe } from '@angular/common';
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Component, inject, linkedSignal, signal, debounced } from '@angular/core';
 import { form, FormField, FormRoot, maxLength, minLength, required } from '@angular/forms/signals';
-
-export enum TaskStatus {
-    TODO = 'todo',
-    IN_PROGRESS = 'in_progress',
-    DONE = 'done',
-}
-
-export enum TaskPriority {
-    LOW = 'low',
-    MEDIUM = 'medium',
-    HIGH = 'high',
-}
-
-export interface Task {
-    title: string;
-    description: string;
-    status: 'todo' | 'in_progress' | 'done' | '';
-    dueDate: string;
-    createdAt: Date;
-    updatedAt: Date;
-    priority: 'low' | 'medium' | 'high';
-    id: string;
-}
+import { Task, TaskPriorityFilter, TaskStatusFilter } from './task.model';
+import { TaskService } from './task.service';
 
 export type TaskModel = Pick<Task, 'title' | 'description' | 'dueDate' | 'status' | 'priority'>;
 
@@ -35,23 +14,21 @@ export type TaskModel = Pick<Task, 'title' | 'description' | 'dueDate' | 'status
     styleUrl: './tasks.scss',
 })
 export class Tasks {
-    protected readonly url = 'http://localhost:3000/tasks';
-    protected readonly http = inject(HttpClient);
+
+    protected readonly taskService = inject(TaskService);
+
     protected formState = signal<'create' | 'update'>('create');
     protected updateId = signal<string>('');
     protected search = signal('');
-    protected status = signal<'todo' | 'in_progress' | 'done' | ''>('');
-    protected priority = signal<'low' | 'medium' | 'high' | ''>('');
+    protected status = signal<TaskStatusFilter>('');
+    protected priority = signal<TaskPriorityFilter>('');
     protected debouncedSearch = debounced(this.search, 500);
 
-    protected tasksResource = httpResource<Task[]>(() => ({
-        url: this.url,
-        params: {
-            search: this.debouncedSearch.value(),
-            status: this.status(),
-            priority: this.priority(),
-        },
-    }));
+    protected tasksResource = this.taskService.getTasks({
+        search: this.debouncedSearch.value,
+        status: this.status,
+        priority: this.priority,
+    });
 
     protected tasks = linkedSignal<Task[]>(() => {
         return this.tasksResource.value() ?? [];
@@ -76,7 +53,7 @@ export class Tasks {
     });
 
     public delete(id: string): void {
-        this.http.delete(this.url + '/' + id).subscribe({
+        this.taskService.deleteTask(id).subscribe({
             next: () => {
                 this.tasks.update((tasks) => {
                     return tasks.filter((task) => parseInt(task.id) !== parseInt(id));
@@ -90,7 +67,7 @@ export class Tasks {
 
     public submit(): void {
         if (this.formState() === 'create') {
-            this.http.post<Task>(this.url, this.form().value()).subscribe({
+            this.taskService.createTask(this.form().value()).subscribe({
                 next: (createdTask: Task) => {
                     this.clear();
                     this.tasks.update((tasks) => [...tasks, createdTask]);
@@ -100,7 +77,7 @@ export class Tasks {
                 },
             });
         } else if (this.formState() === 'update') {
-            this.http.put<Task>(this.url + '/' + this.updateId(), this.form().value()).subscribe({
+            this.taskService.updateTask(this.updateId(), this.form().value()).subscribe({
                 next: (updatedTask: Task) => {
                     this.clear();
                     this.tasks.update((tasks) => {
@@ -129,14 +106,14 @@ export class Tasks {
     public handleStatus(event: Event): void {
         if (event.target) {
             const target = event.target as HTMLInputElement;
-            this.status.set(target?.value as 'todo' | 'in_progress' | 'done');
+            this.status.set(target?.value as TaskStatusFilter);
         }
     }
 
     public handlePriority(event: Event): void {
         if (event.target) {
             const target = event.target as HTMLInputElement;
-            this.priority.set(target?.value as 'low' | 'medium' | 'high');
+            this.priority.set(target?.value as TaskPriorityFilter);
         }
     }
 
