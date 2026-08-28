@@ -4,9 +4,9 @@ import { Task, TaskModel } from './task.model';
 import { Observable } from 'rxjs';
 
 export interface TaskFilters {
-    search: Signal<string>;
-    status: Signal<'todo' | 'in_progress' | 'done' | ''>;
-    priority: Signal<'low' | 'medium' | 'high' | ''>;
+    search: string;
+    status: 'todo' | 'in_progress' | 'done' | '';
+    priority: 'low' | 'medium' | 'high' | '';
 }
 
 @Service()
@@ -14,15 +14,14 @@ export class TaskService {
     private readonly http = inject(HttpClient);
     private readonly baseUrl = 'http://localhost:3000/tasks';
 
-    public getTasks(filters: TaskFilters): HttpResourceRef<Task[] | undefined> {
-        return httpResource<Task[]>(() => ({
-            url: this.baseUrl,
+    getTasks(filters: TaskFilters): Observable<Task[]> {
+        return this.http.get<Task[]>(this.baseUrl, {
             params: {
-                search: filters.search(),
-                status: filters.status(),
-                priority: filters.priority(),
+                search: filters.search,
+                status: filters.status,
+                priority: filters.priority,
             },
-        }));
+        });
     }
 
     public createTask(body: TaskModel): Observable<Task> {

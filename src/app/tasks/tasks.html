@@ -164,32 +164,37 @@
                 <th class="list__cell _due-date">Due Date</th>
                 <th class="list__cell _action">action</th>
             </tr>
-            <!-- <tbody> -->
-            @for (task of tasks(); track task.id) {
-                <tr class="list__row">
-                    <td class="list__cell _title">{{ task.title }}</td>
-                    <td class="list__cell _description">{{ task.description || '-' }}</td>
-                    <td class="list__cell _status">{{ task.status }}</td>
-                    <td class="list__cell _priority">{{ task.priority }}</td>
-                    <td class="list__cell _due-date">{{ task.dueDate | date: 'MMM d, y' }}</td>
-                    <td class="list__cell _action">
-                        <button
-                            class="button _delete"
-                            type="button"
-                            (click)="delete(task.id)"
-                        >
-                            Del
-                        </button>
+            @if (!taskStore.isLoading()) {
+                @for (task of tasksFrmStore(); track task.id) {
+                    <tr class="list__row">
+                        <td class="list__cell _title">{{ task.title }}</td>
+                        <td class="list__cell _description">{{ task.description || '-' }}</td>
+                        <td class="list__cell _status">{{ task.status }}</td>
+                        <td class="list__cell _priority">{{ task.priority }}</td>
+                        <td class="list__cell _due-date">{{ task.dueDate | date: 'MMM d, y' }}</td>
+                        <td class="list__cell _action">
+                            <button
+                                class="button _delete"
+                                type="button"
+                                (click)="delete(task.id)"
+                            >
+                                Del
+                            </button>
 
-                        <button
-                            class="button _primary"
-                            type="button"
-                            (click)="update(task)"
-                        >
-                            Update
-                        </button>
-                    </td>
-                </tr>
+                            <button
+                                class="button _primary"
+                                type="button"
+                                (click)="update(task)"
+                            >
+                                Update
+                            </button>
+                        </td>
+                    </tr>
+                } @empty {
+                    No Tasks
+                }
+            } @else {
+                <h1>Loading...</h1>
             }
             <!-- </tbody> -->
         </table>

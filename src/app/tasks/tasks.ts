@@ -4,6 +4,7 @@ import { Component, inject, linkedSignal, signal, debounced } from '@angular/cor
 import { form, FormField, FormRoot, maxLength, minLength, required } from '@angular/forms/signals';
 import { Task, TaskPriorityFilter, TaskStatusFilter } from './task.model';
 import { TaskService } from './task.service';
+import { TaskStore } from './tasks.store';
 
 export type TaskModel = Pick<Task, 'title' | 'description' | 'dueDate' | 'status' | 'priority'>;
 
@@ -12,27 +13,19 @@ export type TaskModel = Pick<Task, 'title' | 'description' | 'dueDate' | 'status
     imports: [FormField, FormRoot, DatePipe],
     templateUrl: './tasks.html',
     styleUrl: './tasks.scss',
+    providers: [TaskStore],
 })
 export class Tasks {
-
     protected readonly taskService = inject(TaskService);
+    protected readonly taskStore = inject(TaskStore);
+
+    protected readonly tasksFrmStore = this.taskStore.tasks;
 
     protected formState = signal<'create' | 'update'>('create');
     protected updateId = signal<string>('');
-    protected search = signal('');
-    protected status = signal<TaskStatusFilter>('');
-    protected priority = signal<TaskPriorityFilter>('');
-    protected debouncedSearch = debounced(this.search, 500);
-
-    protected tasksResource = this.taskService.getTasks({
-        search: this.debouncedSearch.value,
-        status: this.status,
-        priority: this.priority,
-    });
-
-    protected tasks = linkedSignal<Task[]>(() => {
-        return this.tasksResource.value() ?? [];
-    });
+    protected search = this.taskStore.filter.search;
+    protected status = this.taskStore.filter.status;
+    protected priority = this.taskStore.filter.priority;
 
     protected readonly taskForm = signal<TaskModel>({
         title: '',
@@ -43,77 +36,43 @@ export class Tasks {
     });
 
     protected form = form(this.taskForm, (path) => {
-        (
-            required(path.title),
+        (required(path.title),
             minLength(path.title, 3),
             maxLength(path.title, 255),
-
-            maxLength(path.description, 2000)
-        );
+            maxLength(path.description, 2000));
     });
 
     public delete(id: string): void {
-        this.taskService.deleteTask(id).subscribe({
-            next: () => {
-                this.tasks.update((tasks) => {
-                    return tasks.filter((task) => parseInt(task.id) !== parseInt(id));
-                });
-            },
-            error: (error) => {
-                console.log(error);
-            },
-        });
+        this.taskStore.deleteTask({ id });
     }
 
     public submit(): void {
         if (this.formState() === 'create') {
-            this.taskService.createTask(this.form().value()).subscribe({
-                next: (createdTask: Task) => {
-                    this.clear();
-                    this.tasks.update((tasks) => [...tasks, createdTask]);
-                },
-                error: (error) => {
-                    console.log(error);
-                },
-            });
+            this.taskStore.createTask(this.form().value());
         } else if (this.formState() === 'update') {
-            this.taskService.updateTask(this.updateId(), this.form().value()).subscribe({
-                next: (updatedTask: Task) => {
-                    this.clear();
-                    this.tasks.update((tasks) => {
-                        return (tasks = tasks.map((task) => {
-                            if (task.id === this.updateId()) {
-                                return updatedTask;
-                            }
-                            return task;
-                        }));
-                    });
-                },
-                error: (error) => {
-                    console.log(error);
-                },
-            });
+            this.taskStore.updateTask({ id: this.updateId(), body: this.form().value() });
         }
+        this.clear();
     }
 
     public handleSearch(event: Event): void {
         if (event.target) {
             const target = event.target as HTMLInputElement;
-            this.search.set(target?.value);
+            this.taskStore.updateSearch(target.value);
         }
     }
 
     public handleStatus(event: Event): void {
         if (event.target) {
             const target = event.target as HTMLInputElement;
-            this.status.set(target?.value as TaskStatusFilter);
+            this.taskStore.updateStatus(target?.value as TaskStatusFilter);
         }
     }
 
     public handlePriority(event: Event): void {
         if (event.target) {
             const target = event.target as HTMLInputElement;
-            this.priority.set(target?.value as TaskPriorityFilter);
+            this.taskStore.updatePriority(target?.value as TaskPriorityFilter);
         }
     }
 
@@ -141,8 +100,8 @@ export class Tasks {
     }
 
     public clearFilter(): void {
-        this.search.set('');
-        this.status.set('');
-        this.priority.set('');
+        this.taskStore.updateSearch('');
+        this.taskStore.updateStatus('');
+        this.taskStore.updatePriority('');
     }
 }
