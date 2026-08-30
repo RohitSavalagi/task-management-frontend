@@ -1,0 +1,117 @@
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 2rem;
+    overflow: hidden;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        justify-content: center;
+
+        span {
+            font-size: 2rem;
+            font-weight: 500;
+            background-color: #bbb;
+            padding: 0 0.5rem;
+            border-radius: 0.25rem;
+        }
+    }
+
+    &__body {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    &__heading {
+        text-align: center;
+        font-size: 2rem;
+    }
+
+    &__section {
+        padding: 0 1rem;
+        overflow: hidden;
+        margin-bottom: 2rem;
+
+        &:not(:last-of-type) {
+            border-right: 1px solid #333;
+        }
+    }
+
+    &__task-list {
+        min-height: 100%;
+        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+    }
+
+    &__task-cards {
+        margin-top: 1rem;
+        cursor: grab;
+        padding: 1rem .75rem;
+
+        &._todo {
+            background-color: rgba(255, 255, 0, 0.517);
+            border: 1px solid rgb(92, 92, 1);
+            border-radius: 1rem;
+            box-shadow: 5px 5px 5px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        &._progress {
+            background-color: rgba(0, 110, 255, 0.517);
+            border: 1px solid rgb(92, 92, 1);
+            border-radius: 1rem;
+            box-shadow: 5px 5px 5px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        &._done {
+            background-color: rgba(0, 255, 0, 0.517);
+            border: 1px solid rgb(92, 92, 1);
+            border-radius: 1rem;
+            box-shadow: 5px 5px 5px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        &:active {
+            cursor: grabbing;
+        }
+
+        &.cdk-drag-preview {
+            box-sizing: border-box;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            opacity: 0.95;
+        }
+
+        &.cdk-drag-animating {
+            transition: transform 250ms ease;
+        }
+    }
+}
+
+.task-card-placeholder {
+    min-height: 120px;
+    margin-bottom: 24px;
+    border: 2px dashed #999;
+    border-radius: 8px;
+}
+
+.task-card--drag-preview {
+    width: 280px;
+    padding: 16px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+
+    .task-card__title {
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+}
+
+.dashboard__task-list.cdk-drop-list-dragging .dashboard__task-cards:not(.cdk-drag-placeholder) {
+    transition: transform 250ms ease;
+}

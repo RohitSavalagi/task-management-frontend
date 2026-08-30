@@ -1,0 +1,45 @@
+.task-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow: hidden;
+
+    &__title {
+        font-size: 2rem;
+        font-weight: 500;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &__description {
+        font-size: 1.25rem;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &__details-list {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        margin-top: .5rem;
+        font-size: 1.5rem;
+    }
+
+    &__detail {
+        display: flex;
+        align-items: center;
+    }
+
+    &__label {
+        flex: 0 0 30%;
+    }
+
+    &__value {
+        flex: 0 0 70%;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+}
+

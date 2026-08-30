@@ -28,7 +28,7 @@ export class TaskService {
         return this.http.post<Task>(this.baseUrl, body);
     }
 
-    public updateTask(id: string, body: TaskModel): Observable<Task> {
+    public updateTask(id: string, body: Partial<TaskModel>): Observable<Task> {
         return this.http.put<Task>(this.baseUrl + '/' + id, body);
     }
 

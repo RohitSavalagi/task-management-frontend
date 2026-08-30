@@ -1,0 +1,128 @@
+<div class="dashboard">
+    <h1 class="dashboard__title">Dashboard</h1>
+
+    <div class="dashboard__body">
+        <section class="dashboard__section">
+            <header class="dashboard__header">
+                <h2 class="dashboard__heading">Todo</h2>
+                <span>{{ todoTasks().length }}</span>
+            </header>
+            <div
+                id="todoList"
+                class="dashboard__task-list"
+                cdkDropList
+                [cdkDropListConnectedTo]="['inProgressList', 'doneList']"
+                [cdkDropListData]="todoTasks()"
+                (cdkDropListDropped)="drop($event)"
+            >
+                @for (task of todoTasks(); track task.id) {
+                    <app-task-card
+                        class="dashboard__task-cards _todo"
+                        cdkDrag
+                        [cdkDragData]="task"
+                        [task]="task"
+                    ></app-task-card>
+                    <!-- Drag preview -->
+                    <ng-template cdkDragPreview>
+                        <div class="task-card task-card--drag-preview">
+                            <div class="task-card__title">
+                                {{ task.title }}
+                            </div>
+
+                            <div>Priority: {{ task.priority }}</div>
+                        </div>
+                    </ng-template>
+
+                    <!-- Drop placeholder -->
+                    <ng-template cdkDragPlaceholder>
+                        <div class="task-card-placeholder"></div>
+                    </ng-template>
+                } @empty {
+                    no tasks todo
+                }
+            </div>
+        </section>
+
+        <section class="dashboard__section">
+            <header class="dashboard__header">
+                <h2 class="dashboard__heading">In Progress</h2>
+                <span>{{ progressTasks().length }}</span>
+            </header>
+            <div
+                class="dashboard__task-list"
+                id="inProgressList"
+                cdkDropList
+                [cdkDropListConnectedTo]="['todoList', 'doneList']"
+                [cdkDropListData]="progressTasks()"
+                (cdkDropListDropped)="drop($event)"
+            >
+                @for (task of progressTasks(); track task.id) {
+                    <app-task-card
+                        cdkDrag
+                        [cdkDragData]="task"
+                        class="dashboard__task-cards _progress"
+                        [task]="task"
+                    ></app-task-card>
+                    <!-- Drag preview -->
+                    <ng-template cdkDragPreview>
+                        <div class="task-card task-card--drag-preview">
+                            <div class="task-card__title">
+                                {{ task.title }}
+                            </div>
+
+                            <div>Priority: {{ task.priority }}</div>
+                        </div>
+                    </ng-template>
+
+                    <!-- Drop placeholder -->
+                    <ng-template cdkDragPlaceholder>
+                        <div class="task-card-placeholder"></div>
+                    </ng-template>
+                } @empty {
+                    no tasks in progress
+                }
+            </div>
+        </section>
+
+        <section class="dashboard__section">
+            <header class="dashboard__header">
+                <h2 class="dashboard__heading">Done</h2>
+                <span>{{ doneTasks().length }}</span>
+            </header>
+            <div
+                class="dashboard__task-list"
+                id="doneList"
+                cdkDropList
+                [cdkDropListConnectedTo]="['inProgressList', 'todoList']"
+                [cdkDropListData]="doneTasks()"
+                (cdkDropListDropped)="drop($event)"
+            >
+                @for (task of doneTasks(); track task.id) {
+                    <app-task-card
+                        cdkDrag
+                        [cdkDragData]="task"
+                        class="dashboard__task-cards _done"
+                        [task]="task"
+                    ></app-task-card>
+                    <!-- Drag preview -->
+                    <ng-template cdkDragPreview>
+                        <div class="task-card task-card--drag-preview">
+                            <div class="task-card__title">
+                                {{ task.title }}
+                            </div>
+
+                            <div>Priority: {{ task.priority }}</div>
+                        </div>
+                    </ng-template>
+
+                    <!-- Drop placeholder -->
+                    <ng-template cdkDragPlaceholder>
+                        <div class="task-card-placeholder"></div>
+                    </ng-template>
+                } @empty {
+                    no tasks done
+                }
+            </div>
+        </section>
+    </div>
+</div>

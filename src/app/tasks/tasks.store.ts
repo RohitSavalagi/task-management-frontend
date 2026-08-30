@@ -12,7 +12,7 @@ import { computed, inject } from '@angular/core';
 import { TaskService } from './task.service';
 import { tapResponse } from '@ngrx/operators';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { debounceTime, distinctUntilChanged, pipe, switchMap, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, EMPTY, pipe, switchMap, tap } from 'rxjs';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 
 export interface TaskState {
@@ -23,11 +23,17 @@ export interface TaskState {
         status: TaskStatusFilter;
         priority: TaskPriorityFilter;
     };
+    todoTasks: Task[],
+    progressTasks: Task[],
+    doneTasks: Task[],
 }
 
 export const InitialState: TaskState = {
     tasks: [],
     isLoading: false,
+    todoTasks: [],
+    progressTasks: [],
+    doneTasks: [],
     filter: {
         search: '',
         status: '',
@@ -41,12 +47,21 @@ export const TaskStore = signalStore(
     withProps(() => ({
         _taskService: inject(TaskService),
     })),
-    withComputed(({ filter }) => ({
+    withComputed(({ filter, tasks }) => ({
         taskFilters: computed(() => ({
             search: filter.search(),
             status: filter.status(),
             priority: filter.priority(),
         })),
+        todoTasks: computed(() =>
+            tasks().filter(task => task.status === 'todo')
+        ),
+        progressTasks: computed(() =>
+            tasks().filter(task => task.status === 'in_progress')
+        ),
+        doneTasks: computed(() =>
+            tasks().filter(task => task.status === 'done')
+        )
     })),
     withMethods((store) => ({
         updateSearch: (search: string) => {
@@ -101,6 +116,34 @@ export const TaskStore = signalStore(
                         })
                     )
                 )
+            )
+        ),
+        updateTaskStatus: rxMethod<{ id: string, status: TaskStatusFilter }>(
+            pipe(
+                tap(() => patchState(store, { isLoading: true })),
+                switchMap(({ id, status }) => {
+                    let taskToBeUpdated = store.tasks().find(task => task.id === id);
+                    if (taskToBeUpdated) {
+                        taskToBeUpdated = { ...taskToBeUpdated, status };
+                        return store._taskService.updateTask(id, { status }).pipe(
+                            tapResponse({
+                                next: (updatedTask) => {
+                                    patchState(store, (state) => ({
+                                        tasks: state.tasks.map(task => {
+                                            if (task.id === updatedTask.id) {
+                                                return updatedTask;
+                                            }
+                                            return task;
+                                        })
+                                    }))
+                                },
+                                error: (error) => console.log(error),
+                                finalize: () => patchState(store, { isLoading: false })
+                            })
+                        );
+                    }
+                    return EMPTY;
+                })
             )
         ),
         deleteTask: rxMethod<{ id: string }>(
